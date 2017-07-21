@@ -23,12 +23,13 @@ root.withdraw()
 
 class Vogel:
     """
+    Command line application for stock taking and file preparation in titelive medialog inventory software.
     """
 
     def __init__(self, folder="stock", format="TiteLive", logdir='log'):
         print(__doc__)
 
-        img = """
+        self.img = """
      .-.
     (. .)__,')
     / V      )
@@ -47,10 +48,15 @@ class Vogel:
         self.history = dict()
 
 
+    def start(self):
+        """
+        Start user input sequence
+        """
+
         #  start sequence
         stop = False
         while stop is False:
-            print(img)
+            print(self.img)
             print("Choose an option from the list: ")
             print("""
           1. Add zone
@@ -106,6 +112,13 @@ class Vogel:
 
     def addzone(self, zone=-1, itype='file'):
         """
+        Add zone through:
+            1. file
+            2. direct scanner input
+
+        Stores a copy in the log directory and writes the prepared
+        file in the stock directory. 
+
         """
         if zone == -1:
             zone = str(int(input("Zone number: "))).zfill(4)
@@ -219,4 +232,4 @@ class Vogel:
 
 if __name__ == "__main__":
     v = Vogel()
-    
+    v.start()
