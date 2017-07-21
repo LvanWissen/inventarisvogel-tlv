@@ -63,6 +63,19 @@ class Vogel:
                 stop_zone = False
                 while stop_zone is False:
                     zone = input("Zone number: ")
+
+                    if int(zone) in self.history:
+                        print()
+                        print("Warning! Zone already used! Overwriting file! ")
+                        print("Do you want to continue?")
+                        print("""
+          1. Continue [ENTER]
+          2. Return
+                            """)
+                        if input() == '2':
+                            stop_zone = True
+                            continue
+
                     print("Add zone '{}'".format(zone))
                     print("----------")
                     print("Choose an option from the list: ")
@@ -99,22 +112,20 @@ class Vogel:
 
         else:
             zone = str(int(zone)).zfill(4)
-        
+
         print("Zone: {}".format(zone))
-
-
 
         #  FILE
         if itype == 'file':
             filepath = filedialog.askopenfilename()
-            print(self.checkfile(filepath))
+            self.checkfile(filepath)
 
             filepath = shutil.copy(filepath, self.logdir + os.sep + zone + '.txt')  # don't mess with the original
 
             isbns = self.parsefile(filepath)
 
             self.writefile(isbns, zone)
-            
+
         # #  FOLDER
         # folderpath = filedialog.askdirectory()
         # self.checkdir(folderpath, create=False)
@@ -146,7 +157,7 @@ class Vogel:
                     logfile.write(i)
                     logfile.write('\n')
 
-            # writing file 
+            # writing file
             self.writefile(isbns, zone)
 
 
@@ -190,15 +201,20 @@ class Vogel:
 
     def writefile(self, isbns, zone):
         """
+        Writes file to stock dir in format:
+            0001,9789012345678,0001.
         """
-
-        with open(self.folder + os.path.sep + zone + '.txt', 'w', encoding='utf-8') as outfile:
+        filepath = self.folder + os.path.sep + zone + '.txt'
+        with open(filepath, 'w', encoding='utf-8') as outfile:
 
             for i in isbns:
                 s = "{zone},{isbn},{quant}".format(zone=zone, isbn=i, quant='0001')
 
                 outfile.write(s)
                 outfile.write('\n')
+
+        self.history[int(zone)] = isbns  # add to history
+        print("Written {} isbns to file '{}'".format(len(isbns), filepath))
 
 
 if __name__ == "__main__":
