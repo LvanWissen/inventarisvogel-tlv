@@ -52,7 +52,7 @@ class Vogel:
         self.history = dict()
         self.zones = dict()
 
-        if 'log.xls' in os.listdir(logdir):
+        if 'log.xlsx' in os.listdir(logdir):
             self.df = pd.read_excel(logdir + os.sep + 'log.xlsx')
             self.df.index = [str(i).zfill(4) for i in self.df.index]
         else:
@@ -313,6 +313,7 @@ class Vogel:
         added = str(datetime.now())[:19]
 
         self.df.loc[zone] = [description, articles, stock, added]
+        self.df = self.df.sort_index(ascending=True)
         self.df.to_excel(self.logdir + os.sep + 'log.xlsx')
 
 
