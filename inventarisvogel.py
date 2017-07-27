@@ -7,14 +7,18 @@ inventarisvogel
     \  (   \/
      `._`._ \
 
-   version 0.1
+   version 0.2
 """
 
 import os
 import shutil
 
+from datetime import datetime
+
 import tkinter as tk
 from tkinter import filedialog
+
+from pandas import DataFrame
 
 root = tk.Tk()
 root.focusmodel('passive')
@@ -46,6 +50,8 @@ class Vogel:
         self.format = format
 
         self.history = dict()
+        self.zones = dict()
+        self.df = DataFrame(columns=['description', 'articles', 'stock', 'added'])
 
 
     def start(self):
@@ -60,7 +66,8 @@ class Vogel:
             print("Choose an option from the list: ")
             print("""
           1. Add zone
-          2. Exit
+          2. See history
+          3. Exit
                   """)
             userinput = input("")
 
@@ -69,6 +76,7 @@ class Vogel:
                 stop_zone = False
                 while stop_zone is False:
                     zone = input("Zone number: ")
+                    description = input("Description (optional): ")
 
                     if int(zone) in self.history:
                         print()
@@ -82,13 +90,16 @@ class Vogel:
                             stop_zone = True
                             continue
 
+                    self.zones[str(int(zone)).zfill(4)] = description
+
                     print("Add zone '{}'".format(zone))
                     print("----------")
                     print("Choose an option from the list: ")
                     print("""
           1. File input
-          2. Scanner input
-          3. Return
+          2. Manual input
+          3. Scanner input
+          4. Return
                       """)
 
                     userinput = input("")
@@ -97,14 +108,21 @@ class Vogel:
                         self.addzone(zone, itype='file')
                         stop_zone = True
                     elif userinput == '2':
+                        self.addzone(zone, itype='manual')
+                    elif userinput == '3':
                         self.addzone(zone, itype='scanner')
                         stop_zone = True
-                    elif userinput == '3':
+                    elif userinput == '4':
                         stop_zone = True
                     else:
                         print("Not a valid input. Pick a number. ")
 
             elif userinput == '2':
+                print()
+                print(self.df)
+                print()
+
+            elif userinput == '3':
                 stop = True
 
 
@@ -154,6 +172,7 @@ class Vogel:
             isbns = []
 
             print("Input isbns through scanner. End this input method by typing 'exit'.")
+            print()
 
             exit = False
             while exit is False:
@@ -173,6 +192,38 @@ class Vogel:
             # writing file
             self.writefile(isbns, zone)
 
+        if itype == 'manual':
+            isbns = []
+            counts = []
+
+            print("Input isbn, press ENTER and input amount. End this input method by typing 'exit'.")
+            print()
+
+            exit = False
+            while exit is False:
+                i = input("isbn: ")
+
+                if i == 'exit':
+                    exit = True
+                elif i.isnumeric():
+                    isbns.append(i)
+
+                    ic = input("amount: ")
+                    if ic.isnumeric():
+                        counts.append(int(ic))
+
+                print()
+
+            # logging isbn sequence
+            with open(self.logdir + os.sep + zone + '.txt', 'w', encoding='utf-8') as logfile:
+                for i, ic in zip(isbns, counts):
+                    logfile.write(i)
+                    logfile.write(',')
+                    logfile.write(str(ic))
+                    logfile.write('\n')
+
+            # writing file
+            self.writefile(isbns, zone, counts=counts)
 
 
     def checkdir(self, folder, create=True):
@@ -212,22 +263,52 @@ class Vogel:
 
         return isbns
 
-    def writefile(self, isbns, zone):
+    def writefile(self, isbns, zone, counts=None):
         """
         Writes file to stock dir in format:
             0001,9789012345678,0001.
         """
+
         filepath = self.folder + os.path.sep + zone + '.txt'
         with open(filepath, 'w', encoding='utf-8') as outfile:
+            if counts:
+                for i, ic in zip(isbns, counts):
+                    s = "{zone},{isbn},{quant}".format(zone=zone, isbn=i, quant=str(ic).zfill(4))
 
-            for i in isbns:
-                s = "{zone},{isbn},{quant}".format(zone=zone, isbn=i, quant='0001')
+                    outfile.write(s)
+                    outfile.write('\n')
 
-                outfile.write(s)
-                outfile.write('\n')
+            else:
+
+                for i in isbns:
+                    s = "{zone},{isbn},{quant}".format(zone=zone, isbn=i, quant='0001')
+
+                    outfile.write(s)
+                    outfile.write('\n')
 
         self.history[int(zone)] = isbns  # add to history
         print("Written {} isbns to file '{}'".format(len(isbns), filepath))
+
+
+
+        self.add_to_df(zone, isbns, counts)
+
+    def add_to_df(self, zone, isbns, counts=None):
+        """
+        """
+
+        if counts:
+            stock = sum(counts)
+        else:
+            stock = len(isbns)
+
+        articles = len(set(isbns))
+        description = self.zones[zone]
+        added = str(datetime.now())[:19]
+
+        self.df.loc[zone] = [description, articles, stock, added]
+        self.df.to_excel(self.logdir + os.sep + 'log.xls')
+
 
 
 if __name__ == "__main__":
