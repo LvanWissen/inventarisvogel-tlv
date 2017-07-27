@@ -18,7 +18,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
 
-from pandas import DataFrame
+import pandas as pd
 
 root = tk.Tk()
 root.focusmodel('passive')
@@ -51,7 +51,12 @@ class Vogel:
 
         self.history = dict()
         self.zones = dict()
-        self.df = DataFrame(columns=['description', 'articles', 'stock', 'added'])
+
+        if 'log.xls' in os.listdir(logdir):
+            self.df = pd.read_excel(logdir + os.sep + 'log.xlsx')
+            self.df.index = [str(i).zfill(4) for i in self.df.index]
+        else:
+            self.df = pd.DataFrame(columns=['description', 'articles', 'stock', 'added'])
 
 
     def start(self):
@@ -308,7 +313,7 @@ class Vogel:
         added = str(datetime.now())[:19]
 
         self.df.loc[zone] = [description, articles, stock, added]
-        self.df.to_excel(self.logdir + os.sep + 'log.xls')
+        self.df.to_excel(self.logdir + os.sep + 'log.xlsx')
 
 
 
