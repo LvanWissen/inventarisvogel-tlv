@@ -109,6 +109,7 @@ class Vogel:
                         stop_zone = True
                     elif userinput == '2':
                         self.addzone(zone, itype='manual')
+                        stop_zone = True
                     elif userinput == '3':
                         self.addzone(zone, itype='scanner')
                         stop_zone = True
