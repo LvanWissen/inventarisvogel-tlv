@@ -7,7 +7,7 @@ inventarisvogel
     \  (   \/
      `._`._ \
 
-   version 0.2
+   version 0.3
 """
 
 import os
@@ -293,6 +293,8 @@ class Vogel:
 
                     outfile.write(s)
                     outfile.write('\n')
+
+        shutil.copy(filepath, self.backup)
 
         self.history[int(zone)] = isbns  # add to history
         print("Written {} isbns to file '{}'".format(len(isbns), filepath))
