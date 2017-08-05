@@ -7,7 +7,7 @@ inventarisvogel
     \  (   \/
      `._`._ \
 
-   version 0.3
+   version 0.4
 """
 
 import os
@@ -24,13 +24,15 @@ root = tk.Tk()
 root.focusmodel('passive')
 root.withdraw()
 
+DELETECODE = '2000000003115'
+
 
 class Vogel:
     """
     Command line application for stock taking and file preparation in titelive medialog inventory software.
     """
 
-    def __init__(self, folder="stock", format="TiteLive", logdir='log'):
+    def __init__(self, folder="stock", format="TiteLive", logdir='log', deletecode=None):
         print(__doc__)
 
         self.img = """
@@ -50,6 +52,7 @@ class Vogel:
         self.checkdir(self.logdir)
 
         self.format = format
+        self.deletecode = deletecode
 
         self.history = dict()
         self.zones = dict()
@@ -277,6 +280,25 @@ class Vogel:
             0001,9789012345678,0001.
         """
 
+        # correct using deletecodes
+        if self.deletecode:
+            corrected_isbns = []
+
+            print("\nRemoved:")
+
+            for n, i in enumerate(isbns):
+                if i == self.deletecode:
+                    corrected_isbns.pop()  # remove the last item
+                    print("\t", isbns[n-1])
+                    continue
+                else:
+                    corrected_isbns.append(i)
+
+            print("Total {} item(s)".format(len(isbns) - len(corrected_isbns) - isbns.count(self.deletecode)))
+            print()
+            isbns = corrected_isbns
+
+
         filepath = self.folder + os.path.sep + 'stk' + zone + '.txt'
         with open(filepath, 'w', encoding='utf-8') as outfile:
             if counts:
@@ -323,5 +345,5 @@ class Vogel:
 
 
 if __name__ == "__main__":
-    v = Vogel()
+    v = Vogel(deletecode=DELETECODE)
     v.start()
