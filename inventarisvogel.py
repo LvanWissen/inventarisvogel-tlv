@@ -43,8 +43,10 @@ class Vogel:
               """
 
         self.folder = folder
+        self.backup = logdir + os.sep + 'backup'
         self.logdir = logdir
         self.checkdir(self.folder)
+        self.checkdir(self.backup)
         self.checkdir(self.logdir)
 
         self.format = format
@@ -275,7 +277,7 @@ class Vogel:
             0001,9789012345678,0001.
         """
 
-        filepath = self.folder + os.path.sep + zone + '.txt'
+        filepath = self.folder + os.path.sep + 'stk' + zone + '.txt'
         with open(filepath, 'w', encoding='utf-8') as outfile:
             if counts:
                 for i, ic in zip(isbns, counts):
